@@ -1,0 +1,76 @@
+from flask import Flask, request, send_file, render_template_string
+import numpy as np
+import io
+import wave
+
+app = Flask(__name__)
+
+NOTES = ["C", "D", "E", "F", "G", "A", "B"]
+
+FREQ = {
+    "C": 261.63,
+    "D": 293.66,
+    "E": 329.63,
+    "F": 349.23,
+    "G": 392.00,
+    "A": 440.00,
+    "B": 493.88
+}
+
+def name_to_numbers(name):
+    return [ord(c) - 64 for c in name.upper() if c.isalpha()]
+
+def numbers_to_notes(numbers):
+    return [NOTES[(n - 1) % 7] for n in numbers]
+
+def generate_audio(notes):
+    sample_rate = 44100
+    audio = np.array([], dtype=np.int16)
+
+    for note in notes:
+        freq = FREQ[note]
+        duration = 0.4
+        t = np.linspace(0, duration, int(sample_rate * duration), False)
+        wave_data = np.sin(freq * t * 2 * np.pi)
+        wave_data *= 32767 / np.max(np.abs(wave_data))
+        audio = np.concatenate((audio, wave_data.astype(np.int16)))
+
+    buffer = io.BytesIO()
+    with wave.open(buffer, 'wb') as f:
+        f.setnchannels(1)
+        f.setsampwidth(2)
+        f.setframerate(sample_rate)
+        f.writeframes(audio.tobytes())
+
+    buffer.seek(0)
+    return buffer
+
+@app.route("/")
+def index():
+    name = request.args.get("name", "")
+    notes = numbers_to_notes(name_to_numbers(name)) if name else []
+
+    return render_template_string("""
+        <h1>Name to Music 🎵</h1>
+        <form>
+            <input name="name" placeholder="Enter name" value="{{name}}">
+            <button type="submit">Generate</button>
+        </form>
+
+        {% if name %}
+            <p>Melody: {{notes}}</p>
+            <audio controls src="/play?name={{name}}"></audio>
+            <p>Share this link:</p>
+            <input value="{{request.url}}" size="50">
+        {% endif %}
+    """, name=name, notes=notes)
+
+@app.route("/play")
+def play():
+    name = request.args.get("name", "")
+    notes = numbers_to_notes(name_to_numbers(name))
+    audio = generate_audio(notes)
+    return send_file(audio, mimetype="audio/wav")
+
+if __name__ == "__main__":
+    app.run(debug=True)
