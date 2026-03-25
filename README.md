@@ -66,38 +66,11 @@ Example:
 http://127.0.0.1:5000/?name=alex
 
 
-⸻
-
-🌐 Deployment
-
-You can deploy this app بسهولة using:
-	•	Render
-	•	Replit
-	•	Railway
-
-Basic steps:
-	1.	Push code to GitHub
-	2.	Connect your repo to a hosting platform
-	3.	Deploy as a web service
-	4.	Share your public URL 🎉
-
-⸻
-
 📁 Project Structure
 
 name-to-music/
 │── app.py
 │── README.md
-
-
-⸻
-
-💡 Future Improvements
-	•	🎹 Add octaves for richer sound
-	•	🥁 Add rhythm variation
-	•	🎼 Export MIDI files
-	•	🎨 Visualize melodies
-	•	📱 Improve UI/UX
 
 ⸻
 
